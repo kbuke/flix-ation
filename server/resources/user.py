@@ -128,6 +128,11 @@ class User(Resource):
         else:
             return {"error": f"User {id} not found"}, 404
         
+class IndividualList(Resource):
+    def get(self):
+        individuals = [individual.to_dict() for individual in IndividualModel.query.all()]
+        return individuals, 200
+    
 class Individual(Resource):
     def get(self, id):
         individual = IndividualModel.query.filter(IndividualModel.id==id).first()
@@ -136,6 +141,5 @@ class Individual(Resource):
         else:
             return {"error": f"Individual {id} not found"}, 404
         
-class 
         
 
