@@ -20,6 +20,21 @@ class IndividualModel(UserModel):
     id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
 
+    # Set up relations
+    fave_cinemas = db.relationship("CinemaModel", back_populates="users_fave", secondary="fave_cinemas")
+
+    serialize_rules = (
+        "-fave_cinemas.users_fave",
+        "-fave_cinemas.ac_type",
+        "-fave_cinemas.address_1",
+        "-fave_cinemas.address_2",
+        "-fave_cinemas.city",
+        "-fave_cinemas.country",
+        "-fave_cinemas.email",
+        "-fave_cinemas.post_code",
+        "-fave_cinemas.town",
+    )
+
     __mapper_args__ = {
         "polymorphic_identity": "individual"
     }
@@ -35,6 +50,14 @@ class CinemaModel(UserModel):
     city = db.Column(db.String, nullable=False)
     town = db.Column(db.String, nullable=True)
     post_code = db.Column(db.String, nullable=False)
+
+    users_fave = db.relationship("IndividualModel", back_populates="fave_cinemas", secondary="fave_cinemas")
+
+    serialize_rules = (
+        "-users_fave.fave_cinemas",
+        "-users_fave.email",
+        "-users_fave.ac_type",
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "cinema"
