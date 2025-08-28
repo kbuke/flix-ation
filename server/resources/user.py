@@ -27,11 +27,17 @@ class UserList(Resource):
 
             if user_email in all_emails:
                 return {"error": "This email is already reigistered"}, 409
-            else:
-                user_email=user_email
 
         else:
             return{"error": "Please enter valid email"}
+        
+        # Validation for username
+        selected_username = json.get("username")
+
+        all_usernames = [user.username for user in UserModel.query.all()]
+
+        if selected_username in all_usernames:
+            return{"error": "Username already exists"}, 409
 
         # Validation for account types
         ac_type = json.get("ac_type")
@@ -39,10 +45,10 @@ class UserList(Resource):
         if ac_type == "individual":
             try:
                 new_user = IndividualModel(
-                    email = json.get("email"),
+                    email = user_email,
                     img = json.get("img"),
                     ac_type = ac_type,
-                    username = json.get("username")
+                    username = selected_username
                 )
                 db.session.add(new_user)
                 db.session.commit()
@@ -53,7 +59,7 @@ class UserList(Resource):
         elif ac_type == "cinema":
             try:
                 new_user = CinemaModel(
-                    email = json.get("email"),
+                    email = user_email,
                     img = json.get("img"),
                     ac_type = ac_type,
                     name = json.get("name"),
@@ -73,4 +79,10 @@ class UserList(Resource):
         else:
             return {"error": "Account type must either be cinema or individual"}
 
-
+class User(Resource):
+    def get(self, id):
+        user = UserModel.query.filter(UserModel.id==id).first()
+        if user:
+            return make_response(user.to_dict())
+        else:
+            return {"error": "User not found"}, 404
