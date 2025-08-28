@@ -86,3 +86,20 @@ class User(Resource):
             return make_response(user.to_dict())
         else:
             return {"error": "User not found"}, 404
+        
+    def patch(self, id):
+        data = request.get_json()
+
+        user = UserModel.query.filter(UserModel.id==id).first()
+
+        if user:
+            try:
+                for attr in data:
+                    setattr(user, attr, data[attr])
+                db.session.add(user)
+                db.session.commit()
+                return user.to_dict()
+            except ValueError as e:
+                return {"error": [str(e)]}
+        else:
+            return {"error": f"User {id} not found"}, 404
