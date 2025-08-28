@@ -7,6 +7,8 @@ from flask import session, make_response, request
 
 import re
 
+
+
 class UserList(Resource):
     def get(self):
         users = [user.to_dict() for user in UserModel.query.all()]
@@ -93,12 +95,21 @@ class User(Resource):
         user = UserModel.query.filter(UserModel.id==id).first()
 
         if user:
+            # Add validation for usernames
+                # username already exists
+            all_usernames = [user.username for user in UserModel.query.all()]
+
+            if data['username'] and data['username'] in all_usernames:
+                return{"error": "Username already exists."}, 409
+            
+                # username is the same
+
             try:
                 for attr in data:
                     setattr(user, attr, data[attr])
                 db.session.add(user)
                 db.session.commit()
-                return user.to_dict()
+                return make_response(user.to_dict())
             except ValueError as e:
                 return {"error": [str(e)]}
         else:
