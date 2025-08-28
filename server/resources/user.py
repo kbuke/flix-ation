@@ -146,5 +146,12 @@ class CinemaList(Resource):
         cinemas = [cinema.to_dict() for cinema in CinemaModel.query.all()]
         return cinemas
         
+class Cinema(Resource):
+    def get(self, id):
+        cinema = CinemaModel.query.filter(CinemaModel.id==id).first()
+        if cinema:
+            return cinema.to_dict(), 200
+        else:
+            return {"error": f"Cinema {id} not found"}, 404
         
 
