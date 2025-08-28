@@ -5,6 +5,8 @@ from models.user import UserModel, IndividualModel, CinemaModel
 from flask_restful import Resource
 from flask import session, make_response, request
 
+import re
+
 class UserList(Resource):
     def get(self):
         users = [user.to_dict() for user in UserModel.query.all()]
@@ -12,6 +14,24 @@ class UserList(Resource):
     
     def post(self):
         json = request.get_json()
+
+        # Validation for user emails
+        user_email = json.get("email")
+
+        all_emails = [user.email for user in UserModel.query.all()]
+        print(all_emails)
+
+        pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+
+        if pattern.match(user_email):
+
+            if user_email in all_emails:
+                return {"error": "This email is already reigistered"}, 409
+            else:
+                user_email=user_email
+
+        else:
+            return{"error": "Please enter valid email"}
 
         # Validation for account types
         ac_type = json.get("ac_type")
