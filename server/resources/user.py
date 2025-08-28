@@ -141,5 +141,10 @@ class Individual(Resource):
         else:
             return {"error": f"Individual {id} not found"}, 404
         
+class CinemaList(Resource):
+    def get(self):
+        cinemas = [cinema.to_dict() for cinema in CinemaModel.query.all()]
+        return cinemas
+        
         
 
