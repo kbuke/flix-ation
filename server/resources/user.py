@@ -94,23 +94,38 @@ class User(Resource):
 
         user = UserModel.query.filter(UserModel.id==id).first()
 
+        if not user:
+            return {"error": f"User {id} not found"}, 404
+        
+        # username validation
+        update_username = data.get("username")
+            #-----filters all other users except the current one to ensure it does not notice the email or username already exists
+        all_usernames = [user.username for user in IndividualModel.query.all() if user.id != id]
+        if update_username and update_username in all_usernames:
+            return {"error": f"Username {update_username} already exists."}, 409
+        
+        # email validation
+        update_email = data.get("email")
+        all_emails = [user.email for user in UserModel.query.all() if user.id != id]
+        if update_email and update_email in all_emails:
+            return{"error": f"Email address {update_email} already exists"}, 409
+        
+        try:
+            for attr in data:
+                setattr(user, attr, data[attr])
+            db.session.add(user)
+            db.session.commit()
+            return make_response(user.to_dict())
+        except ValueError as e:
+            return {"error": [str(e)]}
+    
+    def delete(self, id):
+        user = UserModel.query.filter(UserModel.id==id).first()
         if user:
-            # Add validation for usernames
-                # username already exists
-            all_usernames = [user.username for user in UserModel.query.all()]
-
-            if data['username'] and data['username'] in all_usernames:
-                return{"error": "Username already exists."}, 409
-            
-                # username is the same
-
-            try:
-                for attr in data:
-                    setattr(user, attr, data[attr])
-                db.session.add(user)
-                db.session.commit()
-                return make_response(user.to_dict())
-            except ValueError as e:
-                return {"error": [str(e)]}
+            db.session.delete(user)
+            db.session.commit()
+            return {"success": f"User {id} deleted"}, 200
         else:
             return {"error": f"User {id} not found"}, 404
+        
+
