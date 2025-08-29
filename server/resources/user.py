@@ -33,18 +33,19 @@ class UserList(Resource):
         else:
             return{"error": "Please enter valid email"}
         
-        # Validation for username
-        selected_username = json.get("username")
-
-        all_usernames = [user.username for user in UserModel.query.all()]
-
-        if selected_username in all_usernames:
-            return{"error": "Username already exists"}, 409
 
         # Validation for account types
         ac_type = json.get("ac_type")
 
         if ac_type == "individual":
+            # Validation for username
+            selected_username = json.get("username")
+
+            all_usernames = [user.username for user in UserModel.query.all()]
+
+            if selected_username in all_usernames:
+                return{"error": "Username already exists"}, 409
+            
             try:
                 new_user = IndividualModel(
                     email = user_email,

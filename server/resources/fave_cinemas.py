@@ -6,12 +6,17 @@ from models.user import IndividualModel, CinemaModel
 
 
 class FaveCinemaList(Resource):
+    def get(self):
+        fave_cinemas = [fave_cinema.to_dict() for fave_cinema in FaveCinemaModel.query.all()]
+        return fave_cinemas
+    
     def post(self):
         json = request.get_json()
 
         user_id = json.get("userId")
         cinema_id = json.get("cinemaId")
         
+        # ensure user hasnt already favourited the cinema
         existing_fave = FaveCinemaModel.query.filter_by(individual_id=user_id, cinema_id=cinema_id).first()
 
         if existing_fave:

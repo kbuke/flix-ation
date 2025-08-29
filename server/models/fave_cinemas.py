@@ -5,5 +5,5 @@ class FaveCinemaModel(db.Model, SerializerMixin):
     __tablename__ = "fave_cinemas"
 
     id = db.Column(db.Integer, primary_key=True)
-    individual_id = db.Column(db.Integer, db.ForeignKey("individuals.id"))
-    cinema_id = db.Column(db.Integer, db.ForeignKey("cinemas.id"))
+    individual_id = db.Column(db.Integer, db.ForeignKey("individuals.id", ondelete="CASCADE"))
+    cinema_id = db.Column(db.Integer, db.ForeignKey("cinemas.id", ondelete="CASCADE"))
