@@ -15,24 +15,7 @@ class UserList(Resource):
         return users 
     
     def post(self):
-        json = request.get_json()
-
-        # Validation for user emails
-        user_email = json.get("email")
-
-        all_emails = [user.email for user in UserModel.query.all()]
-        print(all_emails)
-
-        pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
-
-        if pattern.match(user_email):
-
-            if user_email in all_emails:
-                return {"error": "This email is already reigistered"}, 409
-
-        else:
-            return{"error": "Please enter valid email"}
-        
+        json = request.get_json()        
 
         # Validation for account types
         ac_type = json.get("ac_type")
@@ -48,7 +31,7 @@ class UserList(Resource):
             
             try:
                 new_user = IndividualModel(
-                    email = user_email,
+                    email = json.get("email"),
                     img = json.get("img"),
                     ac_type = ac_type,
                     username = selected_username
@@ -62,7 +45,7 @@ class UserList(Resource):
         elif ac_type == "cinema":
             try:
                 new_user = CinemaModel(
-                    email = user_email,
+                    email = json.get("email"),
                     img = json.get("img"),
                     ac_type = ac_type,
                     name = json.get("name"),
@@ -131,29 +114,19 @@ class User(Resource):
         
 class IndividualList(Resource):
     def get(self):
-        individuals_data = []
-
-        for individual in IndividualModel.query.all():
-            individual_dict = individual.to_dict()
-            reviews_data = []
-
-            for r in getattr(individual, "reviews", []):
-                review_dict = r.to_dict()
-                # attach film details from your helper in ReviewModel
-                review_dict["film"] = r.film_details
-                reviews_data.append(review_dict)
-
-            individual_dict["reviews"] = reviews_data
-            individuals_data.append(individual_dict)
-
-        return individuals_data, 200
+        individual = [individuals.to_dict() for individuals in IndividualModel.query.all()]
+        return individual
 
     
 class Individual(Resource):
     def get(self, id):
         individual = IndividualModel.query.filter(IndividualModel.id==id).first()
         if individual:
-            return individual.to_dict(), 200
+
+            individual_dict = individual.to_dict()
+            individual_dict["reviews"] = individual.serialized_reviews
+
+            return individual_dict, 200
         else:
             return {"error": f"Individual {id} not found"}, 404
         

@@ -1,5 +1,6 @@
 from config import db 
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import validates
 
 class UserModel(db.Model, SerializerMixin):
     __tablename__ = "users"
@@ -13,6 +14,15 @@ class UserModel(db.Model, SerializerMixin):
         "polymorphic_identity": "user",
         "polymorphic_on": ac_type
     }
+
+    @validates("email")
+    def unique_emails(self, key, email):
+        existing = UserModel.query.filter_by(email=email).first()
+        if existing and existing.id != self.id:
+            raise ValueError(f"Email {email} already exists")
+        return email
+
+    
 
 class IndividualModel(UserModel):
     __tablename__ = "individuals"
@@ -41,6 +51,15 @@ class IndividualModel(UserModel):
     __mapper_args__ = {
         "polymorphic_identity": "individual"
     }
+
+    @property
+    def serialized_reviews(self):
+        reviews_data = []
+        for r in self.reviews or []:
+            review_dict = r.to_dict()
+            review_dict["film"] = r.film_details
+            reviews_data.append(review_dict)
+        return reviews_data
 
 class CinemaModel(UserModel):
     __tablename__ = "cinemas"
