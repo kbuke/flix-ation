@@ -131,8 +131,23 @@ class User(Resource):
         
 class IndividualList(Resource):
     def get(self):
-        individuals = [individual.to_dict() for individual in IndividualModel.query.all()]
-        return individuals, 200
+        individuals_data = []
+
+        for individual in IndividualModel.query.all():
+            individual_dict = individual.to_dict()
+            reviews_data = []
+
+            for r in getattr(individual, "reviews", []):
+                review_dict = r.to_dict()
+                # attach film details from your helper in ReviewModel
+                review_dict["film"] = r.film_details
+                reviews_data.append(review_dict)
+
+            individual_dict["reviews"] = reviews_data
+            individuals_data.append(individual_dict)
+
+        return individuals_data, 200
+
     
 class Individual(Resource):
     def get(self, id):

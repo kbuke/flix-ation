@@ -22,6 +22,7 @@ class IndividualModel(UserModel):
 
     # Set up relations
     fave_cinemas = db.relationship("CinemaModel", back_populates="users_fave", secondary="fave_cinemas")
+    reviews = db.relationship("ReviewModel", back_populates="individual", cascade="all, delete-orphan")
 
     serialize_rules = (
         "-fave_cinemas.users_fave",
@@ -33,6 +34,8 @@ class IndividualModel(UserModel):
         "-fave_cinemas.email",
         "-fave_cinemas.post_code",
         "-fave_cinemas.town",
+
+        "-reviews.individual",
     )
 
     __mapper_args__ = {

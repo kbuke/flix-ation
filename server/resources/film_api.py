@@ -28,3 +28,19 @@ class Film(Resource):
         if response.status_code == 200:
             return data, 200
         return {"error": f"Movie {film_id} not found"}, response.status_code
+
+class FilmGenres(Resource):
+    def get(self):
+        url = f"{API_HOST}/genres"
+        params = {"output_language": request.args.get("lang", "en")}
+        response = requests.get(url, headers=headers, params=params)
+        # breakpoint()
+
+        try:
+            data = response.json()
+        except Exception:
+            return {"error": "Invalid JSON returned from API"}, 500
+        
+        if response.status_code == 200:
+            return data, 200
+        return {"error": f"Genres not found"}, response.status_code
