@@ -52,6 +52,7 @@ class IndividualModel(UserModel):
         "polymorphic_identity": "individual"
     }
 
+    # Add property for reviews
     @property
     def serialized_reviews(self):
         reviews_data = []
@@ -60,6 +61,16 @@ class IndividualModel(UserModel):
             review_dict["film"] = r.film_details
             reviews_data.append(review_dict)
         return reviews_data
+    
+    # Add property for watchlist
+
+    # Add validate decorator to ensure individual username
+    @validates("username")
+    def unique_username(self, key, username):
+        existing = IndividualModel.query.filter_by(username=username).first()
+        if existing and existing.id != self.id:
+            raise ValueError(f"Username {username} already exists")
+        return username
 
 class CinemaModel(UserModel):
     __tablename__ = "cinemas"

@@ -7,8 +7,6 @@ from flask import session, make_response, request
 
 import re
 
-
-
 class UserList(Resource):
     def get(self):
         users = [user.to_dict() for user in UserModel.query.all()]
@@ -21,20 +19,13 @@ class UserList(Resource):
         ac_type = json.get("ac_type")
 
         if ac_type == "individual":
-            # Validation for username
-            selected_username = json.get("username")
 
-            all_usernames = [user.username for user in UserModel.query.all()]
-
-            if selected_username in all_usernames:
-                return{"error": "Username already exists"}, 409
-            
             try:
                 new_user = IndividualModel(
                     email = json.get("email"),
                     img = json.get("img"),
                     ac_type = ac_type,
-                    username = selected_username
+                    username = json.get("username")
                 )
                 db.session.add(new_user)
                 db.session.commit()
