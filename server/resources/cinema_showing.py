@@ -14,6 +14,7 @@ class CinemaShowingList(Resource):
 
             time = json.get("startTime")
             format_time = datetime.strptime(time, "%H:%M").time()
+
             try:
                 new_showing = CinemaShowingModel(
                     show_date = format_date,
@@ -22,6 +23,9 @@ class CinemaShowingList(Resource):
                     cinema_id = json.get("cinemaId"),
                     film_api_id = json.get("filmId")
                 )
+                new_showing.end_time = new_showing.calculate_end_time()
+                breakpoint()
+
                 db.session.add(new_showing)
                 db.session.commit()
                 return new_showing.to_dict(), 201 
@@ -29,3 +33,13 @@ class CinemaShowingList(Resource):
                 return {"error": [str(e)]}
         else:
             return {"error": "Failed to load json"}, 404
+
+class CinemaShowing(Resource):
+    def delete(self, id):
+        showing = CinemaShowingModel.query.filter(CinemaShowingModel.id==id).first()
+        if showing:
+            db.session.delete(showing)
+            db.session.commit()
+            return {"message": f"Showing {id} deleted"}, 201
+        else:
+            return {"error": f"Showing {id} not found"}, 404
