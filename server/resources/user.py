@@ -13,7 +13,18 @@ class UserList(Resource):
         return users 
     
     def post(self):
-        json = request.get_json()        
+        json = request.get_json()  
+
+        # Email validation
+        pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+        new_email = json.get("email")
+        if pattern.match(new_email) is None:
+            return {"error": "Please enter a valid email"}, 400
+
+        # Check if email already exists
+        existing_user = UserModel.query.filter_by(email=new_email).first()
+        if existing_user:
+            return {"error": "This email is already registered"}, 409 
 
         # Validation for account types
         ac_type = json.get("ac_type")
@@ -130,8 +141,14 @@ class Cinema(Resource):
     def get(self, id):
         cinema = CinemaModel.query.filter(CinemaModel.id==id).first()
         if cinema:
-            return cinema.to_dict(), 200
+            cinema_dict = cinema.to_dict()
+            cinema_dict["showings"] = cinema.serialized_screenings
+
+            return cinema_dict, 200 
         else:
-            return {"error": f"Cinema {id} not found"}, 404
+            return {"error": f"Cinema {id} not found"}
+        #     return cinema.to_dict(), 200
+        # else:
+        #     return {"error": f"Cinema {id} not found"}, 404
         
 

@@ -2,6 +2,7 @@ from config import db
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 
+
 class UserModel(db.Model, SerializerMixin):
     __tablename__ = "users"
 
@@ -14,13 +15,6 @@ class UserModel(db.Model, SerializerMixin):
         "polymorphic_identity": "user",
         "polymorphic_on": ac_type
     }
-
-    @validates("email")
-    def unique_emails(self, key, email):
-        existing = UserModel.query.filter_by(email=email).first()
-        if existing and existing.id != self.id:
-            raise ValueError(f"Email {email} already exists")
-        return email
 
     
 
@@ -64,13 +58,6 @@ class IndividualModel(UserModel):
     
     # Add property for watchlist
 
-    # Add validate decorator to ensure individual username
-    @validates("username")
-    def unique_username(self, key, username):
-        existing = IndividualModel.query.filter_by(username=username).first()
-        if existing and existing.id != self.id:
-            raise ValueError(f"Username {username} already exists")
-        return username
 
 class CinemaModel(UserModel):
     __tablename__ = "cinemas"
@@ -85,6 +72,7 @@ class CinemaModel(UserModel):
     post_code = db.Column(db.String, nullable=False)
 
     users_fave = db.relationship("IndividualModel", back_populates="fave_cinemas", secondary="fave_cinemas")
+    showings = db.relationship("CinemaShowingModel", back_populates="cinema", cascade="all, delete-orphan")
 
     serialize_rules = (
         "-users_fave.fave_cinemas",
@@ -95,3 +83,12 @@ class CinemaModel(UserModel):
     __mapper_args__ = {
         "polymorphic_identity": "cinema"
     }
+
+    @property
+    def serialized_screenings(self):
+        screening_data = []
+        for r in self.showings or []:
+            screening_dict = r.to_dict()
+            screening_dict["film"] = r.film_details
+            screening_data.append(screening_dict)
+        return screening_data

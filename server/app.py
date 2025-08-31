@@ -4,6 +4,7 @@ from resources.user import UserList, User, IndividualList, Individual, CinemaLis
 from resources.fave_cinemas import FaveCinemaList, FaveCinema
 from resources.film_api import Film, FilmGenres
 from resources.film_reviews import FilmReviewList, FilmReview
+from resources.cinema_showing import CinemaShowingList
 
 api.add_resource(UserList, "/users")
 api.add_resource(User, "/users/<int:id>")
@@ -20,6 +21,8 @@ api.add_resource(FilmGenres, "/genres")
 
 api.add_resource(FilmReviewList, "/reviews")
 api.add_resource(FilmReview, "/reviews/<int:id>")
+
+api.add_resource(CinemaShowingList, "/showings")
 
 
 if __name__ == "__main__":
